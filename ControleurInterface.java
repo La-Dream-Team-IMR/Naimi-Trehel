@@ -22,7 +22,7 @@ public interface ControleurInterface {
 	 * Receptionne la notification d'un autre controleur de son besoin de la ressource partagée
 	 */
 
-	void dem_SC();
+	void dem_SC(int j);
 	/**
 	 * Receptionne le jeton d'accès à la ressource partagée
 	 */
