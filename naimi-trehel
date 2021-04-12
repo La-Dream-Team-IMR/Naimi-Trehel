@@ -1,0 +1,68 @@
+Processus P[i] :
+Entier dernier, suivant <- (0,0)
+Booléen demande, jeton <- (faux, faux)
+
+// Initialisation de dernier et jeton
+Si i = 1 Faire
+	dernier <- 0; // 0 = nil
+	jeton <- vrai
+Sinon // i ≠ 1
+	dernier <- 1;
+	jeton <- faux
+FSi
+
+Tant que
+	// Demande d'entrée en section critique par
+	// le processus de traitement
+	Soit non demande et A[i] ? demanderSectionCritique() Alors
+		// P[i] n'est pas la racine
+		Si dernier ≠ 0 Faire
+			P[dernier] ! dem_SC(i) ;
+			dernier <- 0
+		
+		// P[i] est la racine et on a le jeton
+		Sinon Si dernier = 0 et jeton Faire
+			A[i] ! signalerAutorisation()
+
+		// P[i] est la racine mais n'a pas le jeton
+ 		Sinon Si dernier = 0 et non jeton Faire
+			rien
+
+		FSi
+		demande <- vrai
+
+	// Fin de section critique
+	Soit demande et jeton et A[i] ? quitterSectionCritique() Alors
+		Si suivant ≠ 0 Faire
+			P[suivant] ! jeton() ;
+			suivant <- 0 ;
+			jeton <- faux
+		Sinon Si suivant = 0 Faire
+			rien
+		FSi
+		demande <- faux
+
+	// Réception d'une demande sans être racine
+	Soit dernier ≠ 0 et P[k] ? dem_SC(j) Alors
+		P[dernier] ! dem_SC(j) ;
+		dernier <- j
+
+	Soit dernier = 0 et P[k] ? dem_SC(j) Alors
+	// P[i] a obligatoirement le jeton,
+	// s'il n'est pas demandeur*
+	Si non demande Faire
+		P[j] ! jeton() ;
+		jeton <- faux
+ Sinon Si demande Faire
+		suivant <- j
+
+	FSi
+	dernier <- j
+
+	// Réception du jeton
+	Soit P[k] ? jeton() Alors
+		jeton <- vrai ;
+		A[i] ! signalerAutorisation()
+
+	Fin Tant que Soit
+Fin Processus
