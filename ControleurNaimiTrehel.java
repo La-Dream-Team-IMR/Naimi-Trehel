@@ -1,11 +1,16 @@
-public class ControleurNaimiTrehel extends Thread implements ControleurInterface {
+import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
+
+public class ControleurNaimiTrehel extends UnicastRemoteObject implements ControleurInterface {
 
     int id;
     int dernier, suivant = 0;
     boolean demande, jeton = false;
+    List<ControleurInterface> P;
 
-    public ControleurNaimiTrehel(int id) {
+    public ControleurNaimiTrehel(int id, List<ControleurInterface> Processus) throws Exception {
         this.id = id;
+        this.P = Processus;
         if(id == 1) {
             dernier = 0;
             jeton = true;
@@ -19,10 +24,10 @@ public class ControleurNaimiTrehel extends Thread implements ControleurInterface
     public void demanderSectionCritique() {
         if(!demande){
             if(dernier != 0) {
-                P[dernier].demanderSectionCritique();
+                P.get(dernier).demanderSectionCritique();
                 dernier = 0;
             } else if (dernier == 0 && jeton) {
-                A[i].signalerAutorisation();
+                A[id].signalerAutorisation();
             } else if (dernier == 0 && !jeton) {
                 // Rien faire
             }
@@ -33,14 +38,14 @@ public class ControleurNaimiTrehel extends Thread implements ControleurInterface
     @Override
     public void signalerAutorisation() {
         // TODO Auto-generated method stub
-        System.out.println("J'ai le jeton");
+        System.out.println("J'ai le jeton !!");
     }
 
     @Override
     public void quitterSectionCritique() {
         if(demande && jeton) {
             if(suivant != 0){
-                P[suivant].jeton();
+                P.get(suivant).jeton();
                 suivant = 0;
                 jeton = false;
             } else if (suivant == 0) {
@@ -55,7 +60,7 @@ public class ControleurNaimiTrehel extends Thread implements ControleurInterface
         switch (dernier) {
             case 0:
                 if(!demande) {
-                    P[j].jeton();
+                    P.get(suivant).jeton();
                     jeton = false;
                 } else if (demande) {
                     suivant = j;
@@ -63,7 +68,7 @@ public class ControleurNaimiTrehel extends Thread implements ControleurInterface
                 break;
         
             default:
-                P[dernier].dem_SC(j);
+                P.get(dernier).dem_SC(j);
                 break;
         }
         dernier = j;
@@ -71,8 +76,8 @@ public class ControleurNaimiTrehel extends Thread implements ControleurInterface
 
     @Override
     public void jeton() {
-        jeton = vrai;
-        A[i].signalerAutorisation();
+        jeton = true;
+        A[id].signalerAutorisation();
     }
 
     @Override

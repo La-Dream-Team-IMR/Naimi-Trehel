@@ -1,7 +1,9 @@
+import java.rmi.Remote;
+
 /**
  * Interface definissant les fonctionnalites attendues d'un controleur pour le projet de repartiteur laser
  */
-public interface ControleurInterface {
+public interface ControleurInterface extends Remote {
 	
 	/**
 	 * Receptionne du demande d'entree en section critique de la part du processus metier
