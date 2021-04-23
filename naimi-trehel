@@ -53,8 +53,8 @@ Tant que
 	Si non demande Faire
 		P[j] ! jeton() ;
 		jeton <- faux
- Sinon Si demande Faire
-		suivant <- j
+	 Sinon Si demande Faire
+			suivant <- j
 
 	FSi
 	dernier <- j
