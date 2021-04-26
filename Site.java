@@ -18,11 +18,19 @@ public class Site {
     private static String getColor(int id){
         switch (id) {
             case 1:
-                return ConsoleColors.RED;
+                return ConsoleColors.BLUE;
             case 2:
                 return ConsoleColors.YELLOW;
             case 3:
                 return ConsoleColors.PURPLE;
+            case 4:
+                return ConsoleColors.CYAN;
+            case 5:
+                return ConsoleColors.GREEN;
+            case 6:
+                return ConsoleColors.RED;
+            case 7:
+                return ConsoleColors.WHITE_UNDERLINED;
             default:
                 return ConsoleColors.WHITE;
         }

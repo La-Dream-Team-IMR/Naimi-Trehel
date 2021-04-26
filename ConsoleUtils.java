@@ -6,4 +6,7 @@ public class ConsoleUtils {
         LocalDateTime timeStamp = LocalDateTime.now();
         System.out.println("[" + timeStamp.getHour()+":"+timeStamp.getMinute()+":"+timeStamp.getSecond()+"]" + " : " + color + textToDebug + ConsoleColors.RESET);
     }
+    public static void debug(String textToDebug){
+        debug(textToDebug, ConsoleColors.WHITE);
+    }
 }
