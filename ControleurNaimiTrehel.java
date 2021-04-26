@@ -32,9 +32,9 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
     public void run() throws RemoteException {
         while (true) {
             try {
-                System.out.println("P" + id + " : Attend un évenement");
+                // ConsoleUtils.debug("P" + id + " : Attend un évenement", color);
                 StateQueue state = queue.take();
-                System.out.println("P" + id + " : Analyse de l'évenement");
+                ConsoleUtils.debug("P" + id + " : Analyse de l'évenement : " + state, color);
                 switch (state) {
                 case Demander:
                     demanderSectionCritique();
@@ -43,11 +43,13 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
                 case Quitter:
                     quitterSectionCritique();
                     break;
+
                 default:
-                    //queue.put(state);
-                    //TODO FIX
-                    System.out.println(color + "P" + id + " : " + state + ConsoleColors.RESET);
-                    throw new Exception("On ne peut pas utiliser son propre message");
+                    queue.put(state);
+                    // TODO FIX
+                    ConsoleUtils.debug(color + "P" + id + " : " + state, color);
+                    // throw new Exception("P" + id + " : On ne peut pas utiliser son propre
+                    // message");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -62,8 +64,9 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
                 get(dernier).dem_SC(id);
                 dernier = 0;
             } else if (dernier == 0 && jeton) {
+                signalerAutorisation();
             }
-            signalerAutorisation();
+
         } else if (dernier == 0 && !jeton) {
             // Rien faire
         }
@@ -72,7 +75,6 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
 
     @Override
     public void signalerAutorisation() throws RemoteException {
-        // Remplir BlockingQueue
         try {
             queue.put(StateQueue.Autoriser);
         } catch (Exception e) {
@@ -121,7 +123,7 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
     @Override
     public void jeton() throws RemoteException {
         jeton = true;
-        System.out.println(this.id + " : J'ai le jeton !!");
+        ConsoleUtils.debug("P" + this.id + " : J'ai le jeton !!", color);
         signalerAutorisation();
     }
 

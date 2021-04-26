@@ -13,18 +13,19 @@ public class ProcessA extends Thread {
 
     @Override
     public void run() {
-        System.out.println(id + " : Start");
-        while(true) {
-            long randomTime = (long) (Math.random() * 1000);
+        ConsoleUtils.debug("A" + id + " : Start", color);
+        while (true) {
+            long randomTime = (long) (Math.random() * 5000);
             try {
                 sleep(randomTime);
                 queue.put(StateQueue.Demander);
-                System.out.println(color + id +" : J'attends la section critique" + ConsoleColors.RESET);
-                queue.take();
-                System.out.println(color + id + " : J'utilise la section Critique Youpi" + ConsoleColors.RESET);
+                ConsoleUtils.debug("A" + id + " : J'attends la section critique", color);
+                queue.take(); //Expecting Autoriser
+                ConsoleUtils.debug("A" + id + " : J'utilise la section Critique Youpi", color);
                 sleep(5000);
+                ConsoleUtils.debug("A" + id + " : Je lache la section Critique", color);
                 queue.put(StateQueue.Quitter);
-                queue.take();
+                queue.take(); //Expecting Ack
             } catch (Exception e) {
                 e.printStackTrace();
             }
