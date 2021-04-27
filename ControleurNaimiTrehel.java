@@ -86,9 +86,9 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
     public void quitterSectionCritique() throws RemoteException {
         if (demande && jeton) {
             if (suivant != 0) {
+                jeton = false;
                 get(suivant).jeton();
                 suivant = 0;
-                jeton = false;
             } else if (suivant == 0) {
                 // Rien Faire
             }
@@ -104,18 +104,18 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
     @Override
     public void dem_SC(int j) throws RemoteException {
         switch (dernier) {
-        case 0:
-            if (!demande) {
-                get(j).jeton();
-                jeton = false;
-            } else if (demande) {
-                suivant = j;
-            }
-            break;
+            case 0:
+                if (!demande) {
+                    jeton = false;
+                    get(j).jeton();
+                } else if (demande) {
+                    suivant = j;
+                }
+                break;
 
-        default:
-            get(dernier).dem_SC(j);
-            break;
+            default:
+                get(dernier).dem_SC(j);
+                break;
         }
         dernier = j;
     }
