@@ -4,12 +4,15 @@ import java.util.concurrent.SynchronousQueue;
 public class Site {
     public static void main(String[] args) throws Exception{
         int id = Integer.parseInt(args[0]);
-        int idPere = Integer.parseInt(args[1]);
+        //int idPere = Integer.parseInt(args[1]);
+        String urlPere = args[1];
+        String hostname = args[2];
+        int port = Integer.parseInt(args[3]);
         String color = getColor(id);
         BlockingQueue<StateQueue> queue = new SynchronousQueue<StateQueue>();
         ProcessA A = new ProcessA(id, queue, color);
-        ControleurInterface P = new ControleurNaimiTrehel(id, idPere, queue, color);
-        System.out.println("Je suis " + id + " et mon papa est " + idPere);
+        ControleurInterface P = new ControleurNaimiTrehel(id, hostname, port, urlPere, queue, color);
+        ConsoleUtils.debug("Je suis " + id + " et mon papa est " + urlPere , color);
         A.start();
         P.run();
         A.join();

@@ -3,6 +3,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 
 public class ControleurNaimiTrehel extends UnicastRemoteObject implements ControleurInterface {
@@ -11,8 +12,40 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
     int dernier, suivant = 0;
     boolean demande, jeton = false;
     BlockingQueue<StateQueue> queue;
+    private String hostname = "127.0.0.1";
+    private int port = 1099;
+    private String url;
     private Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1099);
     String color;
+    HashMap<Integer, String> mapIdToURl = new HashMap<Integer, String>();
+
+    public ControleurNaimiTrehel(int id, String hostname, int port, String urlPere, BlockingQueue<StateQueue> queue,
+            String color) throws Exception {
+
+        this.id = id;
+        this.queue = queue;
+        this.color = color;
+        this.hostname = hostname;
+        this.port = port;
+
+        if (id == 1) {
+            jeton = true;
+        }
+
+        this.url = "rmi://" + hostname + ":" + port + "/P" + id;
+        registry = LocateRegistry.getRegistry(this.hostname, this.port);
+        registry.rebind(this.url, this);
+
+        if (!urlPere.equals("0")) {
+            int startIndex = urlPere.lastIndexOf('P') + 1;
+            int lastIndex = urlPere.length();
+            this.dernier = Integer.parseInt(urlPere.substring(startIndex, lastIndex));
+            mapIdToURl.put(dernier, urlPere);
+            get(dernier).enregistrerControleur(this.url);
+        } else {
+            this.dernier = 0;
+        }
+    }
 
     public ControleurNaimiTrehel(int id, int idPere, BlockingQueue<StateQueue> queue, String color) throws Exception {
         this.id = id;
@@ -24,7 +57,7 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
             jeton = true;
         }
 
-        Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1099);
+        registry = LocateRegistry.getRegistry("127.0.0.1", 1099);
         registry.bind("rmi://localhost:1099/P" + id, this);
     }
 
@@ -104,18 +137,18 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
     @Override
     public void dem_SC(int j) throws RemoteException {
         switch (dernier) {
-            case 0:
-                if (!demande) {
-                    jeton = false;
-                    get(j).jeton();
-                } else if (demande) {
-                    suivant = j;
-                }
-                break;
+        case 0:
+            if (!demande) {
+                jeton = false;
+                get(j).jeton();
+            } else if (demande) {
+                suivant = j;
+            }
+            break;
 
-            default:
-                get(dernier).dem_SC(j);
-                break;
+        default:
+            get(dernier).dem_SC(j);
+            break;
         }
         dernier = j;
     }
@@ -129,7 +162,18 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
 
     @Override
     public void enregistrerControleur(String urlDistant) throws RemoteException {
-        // TODO Auto-generated method stub
+        ConsoleUtils.debug("Ajout d'un nouveau controlleur : " + urlDistant, color);
+        int id = Integer.parseInt(urlDistant.substring(urlDistant.lastIndexOf('P') + 1, urlDistant.length()));
+        if (!this.mapIdToURl.containsKey(id)) {
+            this.mapIdToURl.put(id, urlDistant);
+            if (dernier != 0) {
+                get(dernier).enregistrerControleur(urlDistant);
+            } else {
+                for ( int i : mapIdToURl.keySet()) {
+                    get(i).enregistrerControleur(urlDistant);
+                }
+            }
+        }
 
     }
 
@@ -141,8 +185,9 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
 
     private ControleurInterface get(int id) throws RemoteException {
         ControleurInterface P;
+        String url = mapIdToURl.get(id);
         try {
-            P = (ControleurInterface) registry.lookup("rmi://localhost:1099/P" + id);
+            P = (ControleurInterface) registry.lookup(url);
         } catch (NotBoundException e) {
             return null;
         }
