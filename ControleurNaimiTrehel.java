@@ -69,20 +69,20 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
                 StateQueue state = queue.take();
                 ConsoleUtils.debug("P" + id + " : Analyse de l'évenement : " + state, color);
                 switch (state) {
-                case Demander:
-                    demanderSectionCritique();
-                    break;
+                    case Demander:
+                        demanderSectionCritique();
+                        break;
 
-                case Quitter:
-                    quitterSectionCritique();
-                    break;
+                    case Quitter:
+                        quitterSectionCritique();
+                        break;
 
-                default:
-                    queue.put(state);
-                    // TODO FIX
-                    ConsoleUtils.debug(color + "P" + id + " : " + state, color);
-                    // throw new Exception("P" + id + " : On ne peut pas utiliser son propre
-                    // message");
+                    default:
+                        queue.put(state);
+                        // TODO FIX
+                        ConsoleUtils.debug(color + "P" + id + " : " + state, color);
+                        // throw new Exception("P" + id + " : On ne peut pas utiliser son propre
+                        // message");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -94,6 +94,8 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
     public void demanderSectionCritique() throws RemoteException {
         if (!demande) {
             if (dernier != 0) {
+                ConsoleUtils.debug(mapIdToURl +"", color);
+                ConsoleUtils.debug(dernier + " : " + id, color);
                 get(dernier).dem_SC(id);
                 dernier = 0;
             } else if (dernier == 0 && jeton) {
@@ -136,19 +138,20 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
 
     @Override
     public void dem_SC(int j) throws RemoteException {
+        ConsoleUtils.debug("DemSC : " + dernier + " " + j, color);
         switch (dernier) {
-        case 0:
-            if (!demande) {
-                jeton = false;
-                get(j).jeton();
-            } else if (demande) {
-                suivant = j;
-            }
-            break;
+            case 0:
+                if (!demande) {
+                    jeton = false;
+                    get(j).jeton();
+                } else if (demande) {
+                    suivant = j;
+                }
+                break;
 
-        default:
-            get(dernier).dem_SC(j);
-            break;
+            default:
+                get(dernier).dem_SC(j);
+                break;
         }
         dernier = j;
     }
@@ -166,10 +169,11 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
         int id = Integer.parseInt(urlDistant.substring(urlDistant.lastIndexOf('P') + 1, urlDistant.length()));
         if (!this.mapIdToURl.containsKey(id)) {
             this.mapIdToURl.put(id, urlDistant);
-            if (dernier != 0) {
-                get(dernier).enregistrerControleur(urlDistant);
+            int last = dernier;
+            if (last != 0) {
+                get(last).enregistrerControleur(urlDistant);
             } else {
-                for ( int i : mapIdToURl.keySet()) {
+                for (int i : mapIdToURl.keySet()) {
                     get(i).enregistrerControleur(urlDistant);
                 }
             }
