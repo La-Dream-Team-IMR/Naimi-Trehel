@@ -25,7 +25,7 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
         }
 
         Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1099);
-        registry.bind("rmi://localhost:1099/P" + id, this);
+        registry.rebind("rmi://localhost:1099/P" + id, this);
     }
 
     @Override

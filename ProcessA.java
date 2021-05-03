@@ -44,7 +44,7 @@ public class ProcessA extends Thread {
         
         out.println("A"+id + " : J'utilise le prisme");
         out.flush();
-        sleep(100);
+        sleep(5000);
 
         char buf[] = new char[100];
         in.read(buf);
