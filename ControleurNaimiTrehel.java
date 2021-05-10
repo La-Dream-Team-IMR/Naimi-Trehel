@@ -50,11 +50,12 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
                     default:
                         queue.put(state);
                         // TODO FIX
-                        ConsoleUtils.debug(color + "P" + id + " : " + state, color);
+                        ConsoleUtils.debug("P" + id + " : " + state, color);
                         // throw new Exception("P" + id + " : On ne peut pas utiliser son propre
                         // message");
                 }
             } catch (Exception e) {
+                ConsoleUtils.debug("P" + id +" : ",color);
                 e.printStackTrace();
             }
         }

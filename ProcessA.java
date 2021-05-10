@@ -37,20 +37,25 @@ public class ProcessA extends Thread {
 
     protected void usePrisme() throws Exception {
         Socket socket = new Socket("127.0.0.1", 8080);
-        PrintWriter out = new PrintWriter(socket.getOutputStream());
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        //"'out.println("A"+id + " : J'utilise le prisme");
-        //out.print("END\n");
-        
-        out.println("A"+id + " : J'utilise le prisme");
-        out.flush();
-        sleep(5000);
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        //BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        // "'out.println("A"+id + " : J'utilise le prisme");
+        // out.print("END\n");
 
-        char buf[] = new char[100];
-        in.read(buf);
+        out.println(color + "A" + id + " : J'utilise le prisme" + ConsoleColors.RESET);
+        //out.flush();
+        sleep(100);
 
-        ConsoleUtils.debug(String.valueOf(buf), color);
-        socket.close();
-        //sleep(5000);
+        /*char buf[] = new char[100];
+        in.read(buf);*/
+
+        out.println("END");
+        //out.flush();
+
+        //sleep(50);
+
+        //ConsoleUtils.debug(String.valueOf(buf), color);
+        //socket.close();
+        // sleep(5000);
     }
 }
