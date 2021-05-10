@@ -3,6 +3,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 
 public class ControleurNaimiTrehel extends UnicastRemoteObject implements ControleurInterface {
@@ -12,6 +13,7 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
     boolean demande, jeton = false;
     BlockingQueue<StateQueue> queue;
     private Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1099);
+    HashMap<Integer, ControleurInterface> map;
     String color;
 
     public ControleurNaimiTrehel(int id, int idPere, BlockingQueue<StateQueue> queue, String color) throws Exception {
@@ -19,6 +21,7 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
         this.dernier = idPere;
         this.queue = queue;
         this.color = color;
+        map = new HashMap<Integer, ControleurInterface>();
 
         if (id == 1) {
             jeton = true;
@@ -36,20 +39,20 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
                 StateQueue state = queue.take();
                 ConsoleUtils.debug("P" + id + " : Analyse de l'évenement : " + state, color);
                 switch (state) {
-                case Demander:
-                    demanderSectionCritique();
-                    break;
+                    case Demander:
+                        demanderSectionCritique();
+                        break;
 
-                case Quitter:
-                    quitterSectionCritique();
-                    break;
+                    case Quitter:
+                        quitterSectionCritique();
+                        break;
 
-                default:
-                    queue.put(state);
-                    // TODO FIX
-                    ConsoleUtils.debug(color + "P" + id + " : " + state, color);
-                    // throw new Exception("P" + id + " : On ne peut pas utiliser son propre
-                    // message");
+                    default:
+                        queue.put(state);
+                        // TODO FIX
+                        ConsoleUtils.debug(color + "P" + id + " : " + state, color);
+                        // throw new Exception("P" + id + " : On ne peut pas utiliser son propre
+                        // message");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -140,12 +143,14 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
     }
 
     private ControleurInterface get(int id) throws RemoteException {
-        ControleurInterface P;
-        try {
-            P = (ControleurInterface) registry.lookup("rmi://localhost:1099/P" + id);
-        } catch (NotBoundException e) {
-            return null;
+        if (!map.containsKey(id)) {
+            try {
+                ControleurInterface P = (ControleurInterface) registry.lookup("rmi://localhost:1099/P" + id);
+                map.put(id, P);
+            } catch (NotBoundException e) {
+                return null;
+            }
         }
-        return P;
+        return map.get(id);
     }
 }
