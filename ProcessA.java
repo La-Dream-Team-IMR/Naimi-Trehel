@@ -52,10 +52,10 @@ public class ProcessA extends Thread {
         out.println("END");
         //out.flush();
 
-        //sleep(50);
+        sleep(50);
 
         //ConsoleUtils.debug(String.valueOf(buf), color);
-        //socket.close();
+        socket.close();
         // sleep(5000);
     }
 }

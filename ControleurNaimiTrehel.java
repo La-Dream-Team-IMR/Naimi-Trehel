@@ -1,9 +1,9 @@
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class ControleurNaimiTrehel extends UnicastRemoteObject implements ControleurInterface {
@@ -12,23 +12,29 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
     int dernier, suivant = 0;
     boolean demande, jeton = false;
     BlockingQueue<StateQueue> queue;
-    private Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1099);
+    BlockingQueue<ActionEnum> actions = new ArrayBlockingQueue<>(15);
+    BlockingQueue<Integer> anciens = new ArrayBlockingQueue<>(15);
+    // private Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1099);
     HashMap<Integer, ControleurInterface> map;
     String color;
+    GestionAction gestionAction;
 
     public ControleurNaimiTrehel(int id, int idPere, BlockingQueue<StateQueue> queue, String color) throws Exception {
-        this.id = id;
-        this.dernier = idPere;
+        /*
+         * this.id = id; this.dernier = idPere; this.queue = queue; this.color = color;
+         * map = new HashMap<Integer, ControleurInterface>();
+         */
+        gestionAction = new GestionAction(this, id, idPere, color, actions, anciens);
         this.queue = queue;
         this.color = color;
-        map = new HashMap<Integer, ControleurInterface>();
-
-        if (id == 1) {
-            jeton = true;
-        }
+        this.id = id;
+        /*
+         * if (id == 1) { jeton = true; }
+         */
 
         Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1099);
         registry.rebind("rmi://localhost:1099/P" + id, this);
+        gestionAction.start();
     }
 
     @Override
@@ -46,7 +52,6 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
                     case Quitter:
                         quitterSectionCritique();
                         break;
-
                     default:
                         queue.put(state);
                         // TODO FIX
@@ -55,26 +60,24 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
                         // message");
                 }
             } catch (Exception e) {
-                ConsoleUtils.debug("P" + id +" : ",color);
+                ConsoleUtils.debug("P" + id + " : ", color);
                 e.printStackTrace();
             }
         }
     }
 
+    public void run2() {
+
+    }
+
     @Override
     public void demanderSectionCritique() throws RemoteException {
-        if (!demande) {
-            if (dernier != 0) {
-                get(dernier).dem_SC(id);
-                dernier = 0;
-            } else if (dernier == 0 && jeton) {
-                signalerAutorisation();
-            }
-
-        } else if (dernier == 0 && !jeton) {
-            // Rien faire
-        }
-        demande = true;
+        /*
+         * if (!demande) { if (dernier != 0) { get(dernier).dem_SC(id); dernier = 0; }
+         * else if (dernier == 0 && jeton) { signalerAutorisation(); } else if (dernier
+         * == 0 && !jeton) { // Rien faire } demande = true; }
+         */
+        actions.add(ActionEnum.demanderSectionCritique);
     }
 
     @Override
@@ -88,47 +91,34 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
 
     @Override
     public void quitterSectionCritique() throws RemoteException {
-        if (demande && jeton) {
-            if (suivant != 0) {
-                jeton = false;
-                get(suivant).jeton();
-                suivant = 0;
-            } else if (suivant == 0) {
-                // Rien Faire
-            }
-            try {
-                queue.put(StateQueue.Ack);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            demande = false;
-        }
+        /*
+         * if (demande && jeton) { if (suivant != 0) { jeton = false;
+         * get(suivant).jeton(); suivant = 0; } else if (suivant == 0) { // Rien Faire }
+         * try { queue.put(StateQueue.Ack); } catch (InterruptedException e) {
+         * e.printStackTrace(); } demande = false; }
+         */
+        actions.add(ActionEnum.quitterSectionCritique);
     }
 
     @Override
     public void dem_SC(int j) throws RemoteException {
-        switch (dernier) {
-            case 0:
-                if (!demande) {
-                    jeton = false;
-                    get(j).jeton();
-                } else if (demande) {
-                    suivant = j;
-                }
-                break;
-
-            default:
-                get(dernier).dem_SC(j);
-                break;
-        }
-        dernier = j;
+        /*
+         * switch (dernier) { case 0: if (!demande) { jeton = false; get(j).jeton(); }
+         * else if (demande) { suivant = j; } break;
+         * 
+         * default: get(dernier).dem_SC(j); break; } dernier = j;
+         */
+        anciens.add(j);
+        actions.add(ActionEnum.dem_SC);
     }
 
     @Override
     public void jeton() throws RemoteException {
-        jeton = true;
-        ConsoleUtils.debug("P" + this.id + " : J'ai le jeton !!", color);
-        signalerAutorisation();
+        /*
+         * jeton = true; ConsoleUtils.debug("P" + this.id + " : J'ai le jeton !!",
+         * color); signalerAutorisation();
+         */
+        actions.add(ActionEnum.jeton);
     }
 
     @Override
@@ -143,15 +133,10 @@ public class ControleurNaimiTrehel extends UnicastRemoteObject implements Contro
 
     }
 
-    private ControleurInterface get(int id) throws RemoteException {
-        if (!map.containsKey(id)) {
-            try {
-                ControleurInterface P = (ControleurInterface) registry.lookup("rmi://localhost:1099/P" + id);
-                map.put(id, P);
-            } catch (NotBoundException e) {
-                return null;
-            }
-        }
-        return map.get(id);
-    }
+    /*
+     * private ControleurInterface get(int id) throws RemoteException { if
+     * (!map.containsKey(id)) { try { ControleurInterface P = (ControleurInterface)
+     * registry.lookup("rmi://localhost:1099/P" + id); map.put(id, P); } catch
+     * (NotBoundException e) { return null; } } return map.get(id); }
+     */
 }
