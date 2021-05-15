@@ -25,7 +25,7 @@ Tant que
 			A[i] ! signalerAutorisation()
 
 		// P[i] est la racine mais n'a pas le jeton
- 		Sinon Si dernier = 0 et non jeton Faire
+ 		Sinon Si dernier = 0 et non jeton Faire
 			rien
 
 		FSi
@@ -37,7 +37,7 @@ Tant que
 			P[suivant] ! jeton() ;
 			suivant <- 0 ;
 			jeton <- faux
-		Sinon Si suivant = 0 Faire
+		Sinon Si suivant = 0 Faire
 			rien
 		FSi
 		demande <- faux
@@ -48,16 +48,16 @@ Tant que
 		dernier <- j
 
 	Soit dernier = 0 et P[k] ? dem_SC(j) Alors
-	// P[i] a obligatoirement le jeton,
-	// s'il n'est pas demandeur*
-	Si non demande Faire
-		P[j] ! jeton() ;
-		jeton <- faux
- Sinon Si demande Faire
-		suivant <- j
+		// P[i] a obligatoirement le jeton,
+		// s'il n'est pas demandeur*
+		Si non demande Faire
+			P[j] ! jeton() ;
+			jeton <- faux
+		Sinon Si demande Faire
+			suivant <- j
 
-	FSi
-	dernier <- j
+		FSi
+		dernier <- j
 
 	// Réception du jeton
 	Soit P[k] ? jeton() Alors
